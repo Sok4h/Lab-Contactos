@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1006646662605",
+    "firebase_url": "https://lab-contactos.firebaseio.com",
+    "project_id": "lab-contactos",
+    "storage_bucket": "lab-contactos.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1006646662605:android:d91af57eec44372c156084",
+        "android_client_info": {
+          "package_name": "com.sokah.labcontactos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1006646662605-65d62b1nqka13ci8a5ofgoimtf4i9nlf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDebHYgMiKY8DT0NOgVr3EjlI3UUCE_vlw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1006646662605-65d62b1nqka13ci8a5ofgoimtf4i9nlf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
