@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -20,62 +21,103 @@ import java.util.UUID;
 
 public class ContactActivity extends AppCompatActivity {
 
-    private EditText inputContacto,inputPhone;
+    private EditText inputContacto, inputPhone;
     private String userName;
     private Button btnAdd;
     private User activeUser;
     private FirebaseDatabase db;
-    private  ValueEventListener valueEventListener;
+    private ContactAdapter contactAdapter;
+    private ValueEventListener valueEventListener;
+    private ListView listaContactos;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact);
-        Bundle bundle=getIntent().getExtras();
-        inputContacto=findViewById(R.id.inputContact);
-        inputPhone=findViewById(R.id.inputPhone);
-        btnAdd=findViewById(R.id.btnAddContact);
-        userName=bundle.getString("name",null);
-        db=FirebaseDatabase.getInstance();
+        Bundle bundle = getIntent().getExtras();
+        db = FirebaseDatabase.getInstance();
+        inputContacto = findViewById(R.id.inputContact);
+        inputPhone = findViewById(R.id.inputPhone);
+        btnAdd = findViewById(R.id.btnAddContact);
+        listaContactos = findViewById(R.id.contactList);
+        userName = bundle.getString("name", null);
         UserExist();
+        contactAdapter = new ContactAdapter();
+        btnAdd.setOnClickListener(
+                (v) -> {
 
+                    if (inputContacto.getText().toString().isEmpty() || inputPhone.getText().toString().isEmpty()) {
+
+                        Toast.makeText(this, "Por favor verifique los datos ingresados", Toast.LENGTH_SHORT).show();
+                    } else {
+
+                        db.getReference().child("Contacts").orderByChild("name").equalTo(inputContacto.getText().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                                if (snapshot.exists()) {
+
+                                    Toast.makeText(ContactActivity.this, "Ya existe un contacto con este nombre", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    String id = UUID.randomUUID().toString();
+                                    Contact tempc = new Contact(id,activeUser.getId(), inputContacto.getText().toString(), inputPhone.getText().toString());
+                                    db.getReference().child("Contacts").child(id).setValue(tempc);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+
+                            }
+                        });
+
+                    }
+                }
+        );
+
+        listaContactos.setAdapter(contactAdapter);
     }
 
     private void LoadDatabase() {
-       db.getReference().child("Contacts").orderByChild("id").equalTo(activeUser.getId()).addValueEventListener(new ValueEventListener() {
-           @Override
-           public void onDataChange(@NonNull DataSnapshot snapshot) {
-               for (DataSnapshot child:snapshot.getChildren()) {
 
-                   Contact tempC = child.getValue(Contact.class);
-                   Log.e("TAG", tempC.getPhoneNumber() );
-               }
-           }
+        valueEventListener = db.getReference().child("Contacts").orderByChild("idUser").equalTo(activeUser.getId()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-           @Override
-           public void onCancelled(@NonNull DatabaseError error) {
+                contactAdapter.ClearContacts();
+                for (DataSnapshot child : snapshot.getChildren()) {
 
-           }
-       });
+                    Contact tempC = child.getValue(Contact.class);
+                    contactAdapter.AddContact(tempC);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
-    private void UserExist(){
+    private void UserExist() {
 
         db.getReference().child("User").orderByChild("name").equalTo(userName).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                activeUser=snapshot.getValue(User.class);
-                if(activeUser==null){
+                if (snapshot.exists()) {
+                    activeUser = snapshot.getValue(User.class);
+                    Log.e("TAG", "Existe");
+                } else {
                     String id = UUID.randomUUID().toString();
                     User tempUser = new User(id, userName);
                     db.getReference("User").child(id).setValue(tempUser);
-                    activeUser=tempUser;
+                    activeUser = tempUser;
                     Log.e("TAG", activeUser.getId());
                 }
 
-                Contact contact = new Contact(activeUser.getId(),"xd","3116323350");
-                db.getReference().child("Contacts").child(contact.id).setValue(contact);
                 LoadDatabase();
+
             }
 
             @Override
@@ -91,4 +133,5 @@ public class ContactActivity extends AppCompatActivity {
         db.getReference().removeEventListener(valueEventListener);
         super.onPause();
     }
+
 }
