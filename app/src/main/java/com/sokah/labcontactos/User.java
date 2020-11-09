@@ -2,8 +2,8 @@ package com.sokah.labcontactos;
 
 public class User {
 
-    String id;
-    String name;
+    private String id;
+    private String name;
 
     public User(String id, String name) {
         this.id = id;
@@ -11,7 +11,6 @@ public class User {
     }
 
     public User(){
-
 
     }
 
@@ -30,5 +29,4 @@ public class User {
     public void setName(String name) {
         this.name = name;
     }
-
 }

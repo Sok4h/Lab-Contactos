@@ -41,8 +41,8 @@ public class ContactActivity extends AppCompatActivity {
         btnAdd = findViewById(R.id.btnAddContact);
         listaContactos = findViewById(R.id.contactList);
         userName = bundle.getString("name", null);
-        UserExist();
         contactAdapter = new ContactAdapter();
+        UserExist();
         btnAdd.setOnClickListener(
                 (v) -> {
 
@@ -62,6 +62,8 @@ public class ContactActivity extends AppCompatActivity {
                                     String id = UUID.randomUUID().toString();
                                     Contact tempc = new Contact(id,activeUser.getId(), inputContacto.getText().toString(), inputPhone.getText().toString());
                                     db.getReference().child("Contacts").child(id).setValue(tempc);
+                                    inputPhone.setText("");
+                                    inputContacto.setText("");
                                 }
                             }
 
@@ -72,6 +74,8 @@ public class ContactActivity extends AppCompatActivity {
                         });
 
                     }
+
+
                 }
         );
 
@@ -83,11 +87,11 @@ public class ContactActivity extends AppCompatActivity {
         valueEventListener = db.getReference().child("Contacts").orderByChild("idUser").equalTo(activeUser.getId()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
                 contactAdapter.ClearContacts();
                 for (DataSnapshot child : snapshot.getChildren()) {
 
                     Contact tempC = child.getValue(Contact.class);
+                    Log.e("TAG", tempC.getName());
                     contactAdapter.AddContact(tempC);
 
                 }
@@ -98,16 +102,19 @@ public class ContactActivity extends AppCompatActivity {
 
             }
         });
+
     }
 
     private void UserExist() {
 
         db.getReference().child("User").orderByChild("name").equalTo(userName).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+            public void onDataChange(DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    activeUser = snapshot.getValue(User.class);
-                    Log.e("TAG", "Existe");
+                    for (DataSnapshot ds:snapshot.getChildren()) {
+                        activeUser=ds.getValue(User.class);
+                    }
+
                 } else {
                     String id = UUID.randomUUID().toString();
                     User tempUser = new User(id, userName);
@@ -121,8 +128,9 @@ public class ContactActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            public void onCancelled(DatabaseError error) {
 
+                throw error.toException();
             }
         });
 
