@@ -42,7 +42,8 @@ public class ContactActivity extends AppCompatActivity {
         listaContactos = findViewById(R.id.contactList);
         userName = bundle.getString("name", null);
         contactAdapter = new ContactAdapter();
-        UserExist();
+        //UserExist();
+        LoadDatabase();
         btnAdd.setOnClickListener(
                 (v) -> {
 
@@ -60,7 +61,7 @@ public class ContactActivity extends AppCompatActivity {
                                     Toast.makeText(ContactActivity.this, "Ya existe un contacto con este nombre", Toast.LENGTH_SHORT).show();
                                 } else {
                                     String id = UUID.randomUUID().toString();
-                                    Contact tempc = new Contact(id,activeUser.getId(), inputContacto.getText().toString(), inputPhone.getText().toString());
+                                    Contact tempc = new Contact(id, activeUser.getId(), inputContacto.getText().toString(), inputPhone.getText().toString());
                                     db.getReference().child("Contacts").child(id).setValue(tempc);
                                     inputPhone.setText("");
                                     inputContacto.setText("");
@@ -105,14 +106,14 @@ public class ContactActivity extends AppCompatActivity {
 
     }
 
-    private void UserExist() {
+    /*private void UserExist() {
 
         db.getReference().child("User").orderByChild("name").equalTo(userName).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    for (DataSnapshot ds:snapshot.getChildren()) {
-                        activeUser=ds.getValue(User.class);
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        activeUser = ds.getValue(User.class);
                     }
 
                 } else {
@@ -136,10 +137,14 @@ public class ContactActivity extends AppCompatActivity {
 
     }
 
+     */
+
     @Override
     protected void onPause() {
         db.getReference().removeEventListener(valueEventListener);
         super.onPause();
     }
+
+
 
 }

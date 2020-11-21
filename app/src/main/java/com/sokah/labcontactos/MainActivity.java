@@ -14,7 +14,7 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText inputNombre;
     private Button btnIngresar;
-    private FirebaseDatabase db ;
+    private FirebaseDatabase db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

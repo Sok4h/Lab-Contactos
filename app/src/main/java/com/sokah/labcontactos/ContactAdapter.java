@@ -1,5 +1,4 @@
 package com.sokah.labcontactos;
-
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
@@ -12,24 +11,16 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.net.URI;
 import java.util.ArrayList;
 
-
-public class ContactAdapter extends BaseAdapter  {
+public class ContactAdapter extends BaseAdapter {
 
     private ArrayList<Contact> contactsList;
-    private static final int REQUEST_CALL =1;
+    private static final int REQUEST_CALL = 1;
 
 
     public ContactAdapter() {
@@ -55,7 +46,7 @@ public class ContactAdapter extends BaseAdapter  {
     public View getView(int i, View view, ViewGroup viewGroup) {
 
         LayoutInflater layoutInflater = LayoutInflater.from(viewGroup.getContext());
-        View renglon = layoutInflater.inflate(R.layout.contactview,null);
+        View renglon = layoutInflater.inflate(R.layout.contactview, null);
         TextView name = renglon.findViewById(R.id.nameTv);
         TextView phone = renglon.findViewById(R.id.phoneTv);
         ImageView call = renglon.findViewById(R.id.btnCall);
@@ -63,23 +54,20 @@ public class ContactAdapter extends BaseAdapter  {
         name.setText(contactsList.get(i).getName());
         phone.setText(contactsList.get(i).getPhoneNumber());
         call.setOnClickListener(
-                (v)->{
+                (v) -> {
 
-                    if(ContextCompat.checkSelfPermission(viewGroup.getContext(), Manifest.permission.CALL_PHONE)!=PackageManager.PERMISSION_GRANTED){
+                    if (ContextCompat.checkSelfPermission(viewGroup.getContext(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
 
-                        ActivityCompat.requestPermissions((Activity) viewGroup.getContext(),new String[]{
-                                Manifest.permission.CALL_PHONE},REQUEST_CALL);
-
-                    }
-                    else{
-                        MakeCall(viewGroup.getContext(),contactsList.get(i).getPhoneNumber());
-
+                        ActivityCompat.requestPermissions((Activity) viewGroup.getContext(), new String[]{
+                                Manifest.permission.CALL_PHONE}, REQUEST_CALL);
+                    } else {
+                        MakeCall(viewGroup.getContext(), contactsList.get(i).getPhoneNumber());
                     }
                 }
         );
 
         delete.setOnClickListener(
-                (v)->{
+                (v) -> {
 
                     String id = contactsList.get(i).getId();
                     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Contacts").child(id);
@@ -89,21 +77,20 @@ public class ContactAdapter extends BaseAdapter  {
 
         return renglon;
     }
-    public void ClearContacts(){
 
+    public void ClearContacts() {
         contactsList.clear();
         notifyDataSetChanged();
     }
 
-    public void AddContact(Contact contact){
+    public void AddContact(Contact contact) {
 
         contactsList.add(contact);
         notifyDataSetChanged();
     }
 
-    public void MakeCall(Context context,String phone){
-
-        String dial = "tel:"+phone;
+    public void MakeCall(Context context, String phone) {
+        String dial = "tel:" + phone;
         Intent callIntent = new Intent(Intent.ACTION_CALL, Uri.parse(dial));
         context.startActivity(callIntent);
     }
