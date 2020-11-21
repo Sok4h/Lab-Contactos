@@ -2,6 +2,7 @@ package com.sokah.labcontactos;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,6 +29,12 @@ public class RegisterActivity extends AppCompatActivity {
         password2=findViewById(R.id.inputPaswwordRegister2);
         btnRegister=findViewById(R.id.btnRegister);
         login=findViewById(R.id.textLogin);
+        login.setOnClickListener(
+                (v)->{
+                    Intent intent = new Intent(this,LoginActivity.class);
+                    startActivity(intent);
+                }
+        );
         db=FirebaseDatabase.getInstance();
         auth=FirebaseAuth.getInstance();
 
@@ -44,14 +51,31 @@ public class RegisterActivity extends AppCompatActivity {
                         //verifica si las contraseñas son las mismas
                         if(password.getText().toString().equals(password2.getText().toString())){
 
-                            auth.createUserWithEmailAndPassword(email.getText().toString(),password.toString()).addOnCompleteListener(
+                            auth.createUserWithEmailAndPassword(email.getText().toString(),password.getText().toString()).addOnCompleteListener(
 
                                     (task)->{
 
                                         if(task.isSuccessful()){
 
+                                            String id = auth.getCurrentUser().getUid();
+                                            User tempUser = new User(id,name.getText().toString());
+                                            db.getReference("Users").child(id).setValue(tempUser).addOnCompleteListener(
+                                                    (complete)->{
+
+                                                        if(complete.isComplete()){
+
+                                                            Intent intent = new Intent(this,ContactActivity.class);
+                                                            startActivity(intent);
+
+                                                        }
+                                                    }
+                                            );
 
 
+                                        }
+                                        else {
+
+                                            Toast.makeText(this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                                         }
 
                                     }

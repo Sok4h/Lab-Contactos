@@ -1,6 +1,7 @@
 package com.sokah.labcontactos;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,24 +28,44 @@ public class ContactActivity extends AppCompatActivity {
     private Button btnAdd;
     private User activeUser;
     private FirebaseDatabase db;
+    private FirebaseAuth auth;
     private ContactAdapter contactAdapter;
     private ValueEventListener valueEventListener;
     private ListView listaContactos;
+    private Button btnLogOut;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact);
-        Bundle bundle = getIntent().getExtras();
         db = FirebaseDatabase.getInstance();
         inputContacto = findViewById(R.id.inputContact);
         inputPhone = findViewById(R.id.inputPhone);
         btnAdd = findViewById(R.id.btnAddContact);
         listaContactos = findViewById(R.id.contactList);
-        userName = bundle.getString("name", null);
+        btnLogOut = findViewById(R.id.btnLogOut);
         contactAdapter = new ContactAdapter();
-        //UserExist();
-        LoadDatabase();
+
+        btnLogOut.setOnClickListener(
+
+                (v) -> {
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                            .setTitle("Log Out")
+                            .setMessage("Do you want to log out?")
+                            .setNegativeButton("No", (dialog, id) -> {
+                                dialog.dismiss();
+                            })
+                            .setPositiveButton("Yes", (dialog, id) -> {
+                                auth.signOut();
+                                finish();
+                            });
+                builder.show();
+                }
+        );
+
+        auth = FirebaseAuth.getInstance();
+        LoadUser();
         btnAdd.setOnClickListener(
                 (v) -> {
 
@@ -83,6 +105,30 @@ public class ContactActivity extends AppCompatActivity {
         listaContactos.setAdapter(contactAdapter);
     }
 
+    private void LoadUser() {
+
+        if (auth.getCurrentUser() != null) {
+
+            String id = auth.getCurrentUser().getUid();
+            db.getReference().child("Users").child(id).addListenerForSingleValueEvent(
+                    new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            activeUser = snapshot.getValue(User.class);
+                            LoadDatabase();
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+
+                    }
+
+            );
+        }
+    }
+
     private void LoadDatabase() {
 
         valueEventListener = db.getReference().child("Contacts").orderByChild("idUser").equalTo(activeUser.getId()).addValueEventListener(new ValueEventListener() {
@@ -106,45 +152,11 @@ public class ContactActivity extends AppCompatActivity {
 
     }
 
-    /*private void UserExist() {
-
-        db.getReference().child("User").orderByChild("name").equalTo(userName).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    for (DataSnapshot ds : snapshot.getChildren()) {
-                        activeUser = ds.getValue(User.class);
-                    }
-
-                } else {
-                    String id = UUID.randomUUID().toString();
-                    User tempUser = new User(id, userName);
-                    db.getReference("User").child(id).setValue(tempUser);
-                    activeUser = tempUser;
-                    Log.e("TAG", activeUser.getId());
-                }
-
-                LoadDatabase();
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-
-                throw error.toException();
-            }
-        });
-
-    }
-
-     */
-
     @Override
     protected void onPause() {
         db.getReference().removeEventListener(valueEventListener);
         super.onPause();
     }
-
 
 
 }
